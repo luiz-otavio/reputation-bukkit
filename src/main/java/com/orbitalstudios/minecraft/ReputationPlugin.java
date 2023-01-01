@@ -12,6 +12,7 @@ import com.orbitalstudios.minecraft.storage.ReputationStorage;
 import com.orbitalstudios.minecraft.storage.connector.ReputationStorageConnector;
 import com.orbitalstudios.minecraft.storage.connector.impl.HikariStorageConnector;
 import com.orbitalstudios.minecraft.storage.impl.SQLReputationStorage;
+import com.orbitalstudios.minecraft.util.Colors;
 import com.orbitalstudios.minecraft.vo.ReputationVO;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import me.saiintbrisson.bukkit.command.BukkitFrame;
@@ -80,8 +81,8 @@ public class ReputationPlugin extends JavaPlugin {
             .build();
 
         ImmutableMap<VoteType, ChatColor> voteColors = ImmutableMap.<VoteType, ChatColor>builder()
-            .put(VoteType.LIKE, ChatColor.valueOf(messages.getString("Reputation-Color-Like")))
-            .put(VoteType.DISLIKE, ChatColor.valueOf(messages.getString("Reputation-Color-Dislike")))
+            .put(VoteType.LIKE, Colors.getColor(settings.getString("Reputation-Color-Like")))
+            .put(VoteType.DISLIKE, Colors.getColor(settings.getString("Reputation-Color-Dislike")))
             .build();
 
         Map<String, String> messagesMap = new LinkedHashMap<>();
@@ -116,8 +117,6 @@ public class ReputationPlugin extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        isRunning = true;
-
         ReputationLogger.info("Connecting to database...");
         storageConnector = new HikariStorageConnector(properties);
 
@@ -150,6 +149,8 @@ public class ReputationPlugin extends JavaPlugin {
         pluginManager.registerEvents(new ReputationHandler(reputationRepository, storage, this), this);
         ReputationLogger.info("Listeners registered");
 
+        isRunning = true;
+
         ReputationLogger.info("Registering placeholders...");
         if (!pluginManager.isPluginEnabled("PlaceholderAPI")) {
             ReputationLogger.error("PlaceholderAPI is not enabled");
@@ -180,6 +181,8 @@ public class ReputationPlugin extends JavaPlugin {
 
         if (isRunning) {
             isRunning = false;
+        } else {
+            return;
         }
 
         ReputationPlayer[] reputationPlayers = reputationRepository.getReputationPlayers()
