@@ -33,6 +33,11 @@ public class HikariStorageConnector implements ReputationStorageConnector {
         if (hikariConfig.getMaximumPoolSize() < 1) {
             hikariConfig.setMaximumPoolSize(3);
         }
+
+        if (hikariConfig.getJdbcUrl() == null || hikariConfig.getDataSourceClassName() == null) {
+            // Set default jdbc url to mysql
+            hikariConfig.setDataSourceClassName("com.mysql.cj.jdbc.MysqlDataSource");
+        }
     }
 
     @Override
