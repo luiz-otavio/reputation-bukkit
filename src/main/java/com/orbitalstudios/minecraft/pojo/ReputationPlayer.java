@@ -46,7 +46,7 @@ public class ReputationPlayer {
             this,
             this,
             voteType,
-            votes.get(voteType) + 1
+            votes.getOrDefault(voteType, 0) + 1
         ).call();
 
         if (event.isCancelled()) {
@@ -59,7 +59,7 @@ public class ReputationPlayer {
     }
 
     public int getVotes(VoteType voteType) {
-        return votes.get(voteType);
+        return votes.getOrDefault(voteType, 0);
     }
 
     public void setVotes(VoteType voteType, int amount) {
@@ -73,8 +73,8 @@ public class ReputationPlayer {
     public float getReputation(@NotNull ReputationVO reputationVO) {
         float reputation = 0.0F;
 
-        reputation += votes.get(VoteType.LIKE) * reputationVO.getReputationChange(VoteType.LIKE);
-        reputation -= votes.get(VoteType.DISLIKE) * reputationVO.getReputationChange(VoteType.DISLIKE);
+        reputation += votes.getOrDefault(VoteType.LIKE, 0) * reputationVO.getReputationChange(VoteType.LIKE);
+        reputation -= votes.getOrDefault(VoteType.DISLIKE, 0) * reputationVO.getReputationChange(VoteType.DISLIKE);
 
         return reputation;
     }

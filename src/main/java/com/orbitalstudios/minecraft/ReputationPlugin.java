@@ -11,11 +11,11 @@ import com.orbitalstudios.minecraft.repository.ReputationRepository;
 import com.orbitalstudios.minecraft.storage.ReputationStorage;
 import com.orbitalstudios.minecraft.storage.connector.ReputationStorageConnector;
 import com.orbitalstudios.minecraft.storage.connector.impl.HikariStorageConnector;
+import com.orbitalstudios.minecraft.storage.impl.DevelopmentReputationStorage;
 import com.orbitalstudios.minecraft.storage.impl.SQLReputationStorage;
 import com.orbitalstudios.minecraft.util.Colors;
 import com.orbitalstudios.minecraft.vo.ReputationVO;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
-import me.saiintbrisson.bukkit.command.BukkitFrame;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.ConfigurationSection;
@@ -133,10 +133,12 @@ public class ReputationPlugin extends JavaPlugin {
 
         storage = new SQLReputationStorage(storageConnector);
 
+//        storage = new DevelopmentReputationStorage();
+
         reputationRepository = new ReputationRepository();
 
-        BukkitFrame bukkitFrame = new BukkitFrame(this);
-        bukkitFrame.registerCommands(
+        getServer().getCommandMap().register(
+            "reputation",
             new ReputationCommand(
                 storage,
                 reputationRepository,
@@ -154,7 +156,6 @@ public class ReputationPlugin extends JavaPlugin {
         ReputationLogger.info("Registering placeholders...");
         if (!pluginManager.isPluginEnabled("PlaceholderAPI")) {
             ReputationLogger.error("PlaceholderAPI is not enabled");
-            Bukkit.getPluginManager().disablePlugin(this);
             return;
         }
 
@@ -182,6 +183,10 @@ public class ReputationPlugin extends JavaPlugin {
         if (isRunning) {
             isRunning = false;
         } else {
+            return;
+        }
+
+        if (storageConnector == null) {
             return;
         }
 

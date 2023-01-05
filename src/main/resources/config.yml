@@ -20,3 +20,4 @@ Messages:
     Reputation-Status: '&aYou have a total of %reputation% reputation with %likes% likes and %dislikes% dislikes.'
     Player-Reputation: '&a%player% has a total of %reputation% reputation with %likes% likes and %dislikes% dislikes.'
     Invalid-Arguments: '&cInvalid arguments.'
+    Cannot-Vote-Yourself: '&cYou cannot vote for yourself.'

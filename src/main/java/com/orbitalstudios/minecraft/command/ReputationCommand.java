@@ -6,52 +6,121 @@ import com.orbitalstudios.minecraft.pojo.vote.VoteType;
 import com.orbitalstudios.minecraft.repository.ReputationRepository;
 import com.orbitalstudios.minecraft.storage.ReputationStorage;
 import com.orbitalstudios.minecraft.vo.ReputationVO;
-import lombok.RequiredArgsConstructor;
-import me.saiintbrisson.minecraft.command.annotation.Command;
-import me.saiintbrisson.minecraft.command.annotation.Optional;
-import me.saiintbrisson.minecraft.command.command.Context;
-import me.saiintbrisson.minecraft.command.target.CommandTarget;
+import org.bukkit.Bukkit;
 import org.bukkit.Sound;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author Luiz O. F. Corrêa
  * @since 27/12/2022
  **/
-@RequiredArgsConstructor
-public class ReputationCommand {
+public class ReputationCommand extends Command {
 
     private final ReputationStorage reputationStorage;
     private final ReputationRepository reputationRepository;
 
     private final ReputationVO reputationVO;
 
-    @Command(
-        name = "reputation",
-        target = CommandTarget.PLAYER
-    )
-    public void handleReputationCommand(Context<Player> context, @Optional String target, String voteType) {
-        Player player = context.getSender();
+    public ReputationCommand(
+        @NotNull ReputationStorage reputationStorage,
+        @NotNull ReputationRepository reputationRepository,
+        @NotNull ReputationVO reputationVO
+    ) {
+        super("reputation", "Reputation command for Chiko.", "/reputation", List.of("rep"));
 
-        if (target != null) {
-            ReputationPlayer reputationPlayer = reputationRepository.getReputationPlayer(target);
-            if (reputationPlayer == null) {
-                reputationPlayer = reputationStorage.retrievePlayer(target)
-                    .join();
+        this.reputationStorage = reputationStorage;
+        this.reputationRepository = reputationRepository;
+        this.reputationVO = reputationVO;
+    }
 
-                if (reputationPlayer == null) {
+    @Override
+    public boolean execute(@NotNull CommandSender sender, @NotNull String commandLabel, @NotNull String[] args) {
+        if (!(sender instanceof Player player)) {
+            sender.sendMessage(
+                reputationVO.getMessage("Invalid-Arguments")
+            );
+            return true;
+        }
+
+        if (args.length > 0) {
+            if (args[0].equalsIgnoreCase("set")) {
+                if (!player.hasPermission(reputationVO.adminPermission()) && !player.isOp()) {
                     player.sendMessage(
-                        reputationVO.getMessage("No-Player-Found")
+                        reputationVO.getMessage("No-Permission")
                     );
 
-                    return;
+                    return true;
                 }
-            }
 
-            if (voteType != null) {
+                if (args.length < 2) {
+                    player.sendMessage(
+                        reputationVO.getMessage("Invalid-Arguments")
+                    );
+
+                    return true;
+                }
+
+                if (args.length < 3) {
+                    player.sendMessage(
+                        reputationVO.getMessage("Invalid-Arguments")
+                    );
+
+                    return true;
+                }
+
+                if (args.length < 4) {
+                    player.sendMessage(
+                        reputationVO.getMessage("Invalid-Arguments")
+                    );
+
+                    return true;
+                }
+
+                int amount;
+                try {
+                    amount = Integer.parseInt(args[3]);
+                } catch (NumberFormatException exception) {
+                    player.sendMessage(
+                        reputationVO.getMessage("Invalid-Arguments")
+                    );
+
+                    return true;
+                }
+
+                if (amount < 0) {
+                    player.sendMessage(
+                        reputationVO.getMessage("Invalid-Arguments")
+                    );
+
+                    return true;
+                }
+
+                ReputationPlayer reputationPlayer = reputationRepository.getReputationPlayer(args[1]);
+                if (reputationPlayer == null) {
+                    reputationPlayer = reputationStorage.retrievePlayer(args[1])
+                        .join();
+
+                    if (reputationPlayer == null) {
+                        player.sendMessage(
+                            reputationVO.getMessage("No-Player-Found")
+                        );
+
+                        return true;
+                    }
+                }
+
                 VoteType targetType = null;
                 for (VoteType type : VoteType.values()) {
-                    if (type.name().equalsIgnoreCase(voteType)) {
+                    if (type.name().equalsIgnoreCase(args[2])) {
                         targetType = type;
                         break;
                     }
@@ -62,7 +131,56 @@ public class ReputationCommand {
                         reputationVO.getMessage("Invalid-Vote-Type")
                     );
 
-                    return;
+                    return true;
+                }
+
+                switch (targetType) {
+                    case LIKE -> reputationPlayer.setVotes(VoteType.LIKE, amount);
+                    case DISLIKE -> reputationPlayer.setVotes(VoteType.DISLIKE, amount);
+                }
+
+                player.sendMessage(
+                    reputationVO.getMessage(
+                        "Player-Reputation",
+                        "%player%", reputationPlayer.getName(),
+                        "%reputation%", reputationPlayer.getReputation(reputationVO),
+                        "%likes%", reputationPlayer.getVotes(VoteType.LIKE),
+                        "%dislikes%", reputationPlayer.getVotes(VoteType.DISLIKE)
+                    )
+                );
+
+                return true;
+            }
+
+            ReputationPlayer reputationPlayer = reputationRepository.getReputationPlayer(args[0]);
+            if (reputationPlayer == null) {
+                reputationPlayer = reputationStorage.retrievePlayer(args[0])
+                    .join();
+
+                if (reputationPlayer == null) {
+                    player.sendMessage(
+                        reputationVO.getMessage("No-Player-Found")
+                    );
+
+                    return true;
+                }
+            }
+
+            if (args.length > 1) {
+                VoteType targetType = null;
+                for (VoteType type : VoteType.values()) {
+                    if (type.name().equalsIgnoreCase(args[1])) {
+                        targetType = type;
+                        break;
+                    }
+                }
+
+                if (targetType == null) {
+                    player.sendMessage(
+                        reputationVO.getMessage("Invalid-Vote-Type")
+                    );
+
+                    return true;
                 }
 
                 ReputationPlayer author = reputationRepository.getReputationPlayer(player.getUniqueId());
@@ -71,8 +189,16 @@ public class ReputationCommand {
                         reputationVO.getMessage("No-Player-Found")
                     );
 
-                    return;
+                    return true;
                 }
+
+//                if (author.getUniqueId().equals(reputationPlayer.getUniqueId())) {
+//                    player.sendMessage(
+//                        reputationVO.getMessage("Cannot-Vote-Yourself")
+//                    );
+//
+//                    return true;
+//                }
 
                 final ReputationPlayer finalAuthor = author,
                     finalReputationPlayer = reputationPlayer;
@@ -88,9 +214,9 @@ public class ReputationCommand {
                         );
 
                         reputationStorage.computeVote(finalAuthor, finalReputationPlayer, VoteType.LIKE)
-                                .thenAccept(unused -> {
-                                    ReputationLogger.info("Vote registered: %s -> %s", finalAuthor.getName(), finalReputationPlayer.getName());
-                                });
+                            .thenAccept(unused -> {
+                                ReputationLogger.info("Vote registered: %s -> %s", finalAuthor.getName(), finalReputationPlayer.getName());
+                            });
 
                         player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
                     }
@@ -139,7 +265,7 @@ public class ReputationCommand {
                 )
             );
 
-            return;
+            return true;
         }
 
         ReputationPlayer reputationPlayer = reputationRepository.getReputationPlayer(player.getUniqueId());
@@ -149,7 +275,7 @@ public class ReputationCommand {
                 reputationVO.getMessage("Something-Went-Wrong")
             );
 
-            return;
+            return true;
         }
 
         float reputation = reputationPlayer.getReputation(reputationVO);
@@ -168,89 +294,46 @@ public class ReputationCommand {
         } else {
             player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_CELEBRATE, 1, 1);
         }
+
+        return true;
     }
 
-    @Command(
-        name = "reputation.set"
-    )
-    public void handleReputationSetCommand(Context<Player> context, @Optional String target, @Optional String voteType, @Optional(def = "-1") int amount) {
-        Player player = context.getSender();
-        if (!player.hasPermission(reputationVO.adminPermission())) {
-            player.sendMessage(
-                reputationVO.getMessage("No-Permission")
-            );
+    @Override
+    public @NotNull List<String> tabComplete(@NotNull CommandSender sender, @NotNull String alias, @NotNull String[] args) throws IllegalArgumentException {
+        if (args.length == 1 && args[0].isEmpty()) {
+            List<String> range = new ArrayList<>(Bukkit.getOnlinePlayers().size() + 1);
 
-            return;
-        }
+            range.add("set");
 
-        if (target == null) {
-            player.sendMessage(
-                reputationVO.getMessage("Invalid-Arguments")
-            );
-
-            return;
-        }
-
-        if (voteType == null) {
-            player.sendMessage(
-                reputationVO.getMessage("Invalid-Arguments")
-            );
-
-            return;
-        }
-
-        if (amount < 0) {
-            player.sendMessage(
-                reputationVO.getMessage("Invalid-Arguments")
-            );
-
-            return;
-        }
-
-
-        ReputationPlayer reputationPlayer = reputationRepository.getReputationPlayer(target);
-        if (reputationPlayer == null) {
-            reputationPlayer = reputationStorage.retrievePlayer(target)
-                .join();
-
-            if (reputationPlayer == null) {
-                player.sendMessage(
-                    reputationVO.getMessage("No-Player-Found")
-                );
-
-                return;
+            for (Player player : Bukkit.getOnlinePlayers()) {
+                range.add(player.getName());
             }
+
+            return range;
         }
 
-        VoteType targetType = null;
-        for (VoteType type : VoteType.values()) {
-            if (type.name().equalsIgnoreCase(voteType)) {
-                targetType = type;
-                break;
+        if (args[0].equalsIgnoreCase("set")) {
+            return switch (args.length) {
+                case 1 -> Bukkit.getOnlinePlayers()
+                    .stream()
+                    .map(Player::getName)
+                    .collect(Collectors.toList());
+                case 2 -> Arrays.stream(VoteType.values())
+                    .map(Enum::name)
+                    .collect(Collectors.toList());
+                default -> Collections.emptyList();
+            };
+        } else {
+            if (Bukkit.getPlayerExact(args[0]) == null) {
+                return Bukkit.getOnlinePlayers()
+                    .stream()
+                    .map(Player::getName)
+                    .collect(Collectors.toList());
             }
+
+            return Arrays.stream(VoteType.values())
+                .map(Enum::name)
+                .collect(Collectors.toList());
         }
-
-        if (targetType == null) {
-            player.sendMessage(
-                reputationVO.getMessage("Invalid-Vote-Type")
-            );
-
-            return;
-        }
-
-        switch (targetType) {
-            case LIKE -> reputationPlayer.setVotes(VoteType.LIKE, amount);
-            case DISLIKE -> reputationPlayer.setVotes(VoteType.DISLIKE, amount);
-        }
-
-        player.sendMessage(
-            reputationVO.getMessage(
-                "Player-Reputation",
-                "%player%", reputationPlayer.getName(),
-                "%reputation%", reputationPlayer.getReputation(reputationVO),
-                "%likes%", reputationPlayer.getVotes(VoteType.LIKE),
-                "%dislikes%", reputationPlayer.getVotes(VoteType.DISLIKE)
-            )
-        );
     }
 }
