@@ -3,7 +3,7 @@ api-version: 1.19
 authors:
     - https://github.com/luiz-otavio
     - Orbital-Studios
-version: 0.0.1
+version: 0.0.2
 main: com.orbitalstudios.minecraft.ReputationPlugin
 softdepend:
     - PlaceholderAPI
