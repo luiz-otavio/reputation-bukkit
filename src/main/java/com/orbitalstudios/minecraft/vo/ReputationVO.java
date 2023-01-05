@@ -26,7 +26,7 @@ public record ReputationVO(
     }
 
     public String getMessage(String key) {
-        return messages.get(key);
+        return messages.getOrDefault(key, ChatColor.RED + "Seems like there's not message for '" + key + "' entry.");
     }
 
     public String getMessage(String key, Object... args) {
