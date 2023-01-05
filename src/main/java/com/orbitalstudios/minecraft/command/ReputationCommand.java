@@ -192,13 +192,13 @@ public class ReputationCommand extends Command {
                     return true;
                 }
 
-//                if (author.getUniqueId().equals(reputationPlayer.getUniqueId())) {
-//                    player.sendMessage(
-//                        reputationVO.getMessage("Cannot-Vote-Yourself")
-//                    );
-//
-//                    return true;
-//                }
+                if (author.getUniqueId().equals(reputationPlayer.getUniqueId())) {
+                    player.sendMessage(
+                        reputationVO.getMessage("Cannot-Vote-Yourself")
+                    );
+
+                    return true;
+                }
 
                 final ReputationPlayer finalAuthor = author,
                     finalReputationPlayer = reputationPlayer;
