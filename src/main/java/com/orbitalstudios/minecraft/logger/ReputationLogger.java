@@ -16,7 +16,7 @@ public class ReputationLogger {
     }
 
     public static void info(String message, Object... args) {
-        LOGGER.info(message, args);
+        LOGGER.info(String.format(message, args));
     }
 
     public static void warn(String message) {
