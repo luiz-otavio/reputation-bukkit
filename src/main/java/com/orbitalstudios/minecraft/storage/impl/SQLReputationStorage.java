@@ -38,10 +38,22 @@ public class SQLReputationStorage implements ReputationStorage {
 
         try (Connection connection = connector.getConnection()) {
             PreparedStatement preparedStatement = connection.prepareStatement(
-                sqlReader.getSql("setup_database_table")
+                sqlReader.getSql("create_users_table")
             );
 
             int result = preparedStatement.executeUpdate();
+
+            if (result == 0) {
+                ReputationLogger.info("Database table created successfully.");
+            } else {
+                ReputationLogger.info("Database table already exists.");
+            }
+
+            preparedStatement = connection.prepareStatement(
+                sqlReader.getSql("create_votes_table")
+            );
+
+            result = preparedStatement.executeUpdate();
 
             if (result == 0) {
                 ReputationLogger.info("Database table created successfully.");
@@ -321,7 +333,7 @@ public class SQLReputationStorage implements ReputationStorage {
                 int[] result = preparedStatement.executeBatch();
                 if (result.length == 0) {
                     ReputationLogger.info("Players not batched in database.");
-                    return false;
+                    return true;
                 }
 
                 ReputationLogger.info("Players batched in database.");
