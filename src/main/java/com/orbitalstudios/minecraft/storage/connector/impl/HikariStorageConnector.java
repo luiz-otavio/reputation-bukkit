@@ -38,6 +38,11 @@ public class HikariStorageConnector implements ReputationStorageConnector {
             // Set default jdbc url to mysql
             hikariConfig.setDataSourceClassName("com.mysql.cj.jdbc.MysqlDataSource");
         }
+
+        this.executorService = Executors.newFixedThreadPool(
+            hikariConfig.getMaximumPoolSize(),
+            r -> new Thread(r, "Reputation-Worker")
+        );
     }
 
     @Override
