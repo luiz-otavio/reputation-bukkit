@@ -53,6 +53,8 @@ public class ReputationPlugin extends JavaPlugin {
 
     private Properties properties;
 
+    private PlaceholderExpansion[] expansions;
+
     @Override
     public void onLoad() {
         if (!getDataFolder().exists()) {
@@ -142,7 +144,8 @@ public class ReputationPlugin extends JavaPlugin {
             new ReputationCommand(
                 storage,
                 reputationRepository,
-                reputationVO
+                reputationVO,
+                this
             )
         );
 
@@ -159,12 +162,12 @@ public class ReputationPlugin extends JavaPlugin {
             return;
         }
 
-        PlaceholderExpansion[] expansions = {
+        expansions = new PlaceholderExpansion[] {
             new ColorExtension(reputationRepository, reputationVO),
+            new TotalExtension(reputationRepository, reputationVO),
             new DislikeExtension(reputationRepository),
             new LikeExtension(reputationRepository),
-            new PercentageExtension(reputationRepository),
-            new TotalExtension(reputationRepository)
+            new PercentageExtension(reputationRepository)
         };
 
         for (PlaceholderExpansion expansion : expansions) {
@@ -186,8 +189,8 @@ public class ReputationPlugin extends JavaPlugin {
             return;
         }
 
-        if (storageConnector == null) {
-            return;
+        for (PlaceholderExpansion expansion : expansions) {
+            expansion.unregister();
         }
 
         ReputationPlayer[] reputationPlayers = reputationRepository.getReputationPlayers()

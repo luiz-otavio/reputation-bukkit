@@ -58,12 +58,25 @@ public class DevelopmentReputationStorage implements ReputationStorage {
     }
 
     @Override
-    public CompletableFuture<Boolean> computeVote(@NotNull ReputationPlayer player, @NotNull ReputationPlayer target, @NotNull VoteType voteType) {
+    public CompletableFuture<Boolean> computeVote(
+        @NotNull ReputationPlayer player,
+        @NotNull ReputationPlayer target,
+        @NotNull VoteType voteType
+    ) {
         return CompletableFuture.completedFuture(true);
     }
 
     @Override
-    public CompletableFuture<Boolean> hasVoted(@NotNull ReputationPlayer player, long seconds) {
+    public CompletableFuture<Boolean> updateVotes(@NotNull ReputationPlayer reputationPlayer, @NotNull VoteType voteType, int amount) {
+        return CompletableFuture.completedFuture(true);
+    }
+
+    @Override
+    public CompletableFuture<Boolean> hasVoted(
+        @NotNull ReputationPlayer player,
+        @NotNull ReputationPlayer target,
+        long seconds
+    ) {
         return CompletableFuture.completedFuture(false);
     }
 
