@@ -95,18 +95,20 @@ public class SQLReputationStorage implements ReputationStorage {
                 EnumMap<VoteType, Integer> votes = new EnumMap<>(VoteType.class);
                 EnumMap<VoteType, Instant> history = new EnumMap<>(VoteType.class);
 
-                for (VoteType voteType : VoteType.values()) {
-                    String lowerCase = voteType.name()
-                        .toLowerCase();
+                votes.put(VoteType.LIKE, resultSet.getInt("likes"));
+                votes.put(VoteType.DISLIKE, resultSet.getInt("dislikes"));
 
-                    int votesValue = resultSet.getInt(lowerCase);
+                history.put(
+                    VoteType.LIKE,
+                    resultSet.getTimestamp("last_like")
+                    .toInstant()
+                );
 
-                    Instant historyValue = resultSet.getTimestamp("last_" + lowerCase)
-                        .toInstant();
-
-                    votes.put(voteType, votesValue);
-                    history.put(voteType, historyValue);
-                }
+                history.put(
+                    VoteType.DISLIKE,
+                    resultSet.getTimestamp("last_dislike")
+                    .toInstant()
+                );
 
                 Instant createdAt = resultSet.getTimestamp("created_at")
                     .toInstant();
@@ -145,18 +147,20 @@ public class SQLReputationStorage implements ReputationStorage {
                 EnumMap<VoteType, Integer> votes = new EnumMap<>(VoteType.class);
                 EnumMap<VoteType, Instant> history = new EnumMap<>(VoteType.class);
 
-                for (VoteType voteType : VoteType.values()) {
-                    String lowerCase = voteType.name()
-                        .toLowerCase();
+                votes.put(VoteType.LIKE, resultSet.getInt("likes"));
+                votes.put(VoteType.DISLIKE, resultSet.getInt("dislikes"));
 
-                    int votesValue = resultSet.getInt(lowerCase);
+                history.put(
+                    VoteType.LIKE,
+                    resultSet.getTimestamp("last_like")
+                        .toInstant()
+                );
 
-                    Instant historyValue = resultSet.getTimestamp("last_" + lowerCase)
-                        .toInstant();
-
-                    votes.put(voteType, votesValue);
-                    history.put(voteType, historyValue);
-                }
+                history.put(
+                    VoteType.DISLIKE,
+                    resultSet.getTimestamp("last_dislike")
+                        .toInstant()
+                );
 
                 Instant createdAt = resultSet.getTimestamp("created_at")
                     .toInstant();
