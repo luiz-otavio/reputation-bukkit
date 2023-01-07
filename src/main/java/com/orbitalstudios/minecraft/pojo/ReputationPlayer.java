@@ -58,6 +58,12 @@ public class ReputationPlayer {
         votes.put(voteType, event.getReputation());
     }
 
+    public void setHistory(@NotNull VoteType voteType, @NotNull Instant instant) {
+        updatedAt = Instant.now();
+
+        histories.put(voteType, instant);
+    }
+
     public int getVotes(VoteType voteType) {
         return votes.getOrDefault(voteType, 0);
     }
