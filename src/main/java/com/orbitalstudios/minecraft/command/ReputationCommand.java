@@ -44,17 +44,10 @@ public class ReputationCommand extends Command {
 
     @Override
     public boolean execute(@NotNull CommandSender sender, @NotNull String commandLabel, @NotNull String[] args) {
-        if (!(sender instanceof Player player)) {
-            sender.sendMessage(
-                reputationVO.getMessage("Invalid-Arguments")
-            );
-            return true;
-        }
-
         if (args.length > 0) {
             if (args[0].equalsIgnoreCase("set")) {
-                if (!player.hasPermission(reputationVO.adminPermission()) && !player.isOp()) {
-                    player.sendMessage(
+                if (!sender.hasPermission(reputationVO.adminPermission()) && !sender.isOp()) {
+                    sender.sendMessage(
                         reputationVO.getMessage("No-Permission")
                     );
 
@@ -62,7 +55,7 @@ public class ReputationCommand extends Command {
                 }
 
                 if (args.length < 2) {
-                    player.sendMessage(
+                    sender.sendMessage(
                         reputationVO.getMessage("Invalid-Arguments")
                     );
 
@@ -70,7 +63,7 @@ public class ReputationCommand extends Command {
                 }
 
                 if (args.length < 3) {
-                    player.sendMessage(
+                    sender.sendMessage(
                         reputationVO.getMessage("Invalid-Arguments")
                     );
 
@@ -78,7 +71,7 @@ public class ReputationCommand extends Command {
                 }
 
                 if (args.length < 4) {
-                    player.sendMessage(
+                    sender.sendMessage(
                         reputationVO.getMessage("Invalid-Arguments")
                     );
 
@@ -89,7 +82,7 @@ public class ReputationCommand extends Command {
                 try {
                     amount = Integer.parseInt(args[3]);
                 } catch (NumberFormatException exception) {
-                    player.sendMessage(
+                    sender.sendMessage(
                         reputationVO.getMessage("Invalid-Arguments")
                     );
 
@@ -97,7 +90,7 @@ public class ReputationCommand extends Command {
                 }
 
                 if (amount < 0) {
-                    player.sendMessage(
+                    sender.sendMessage(
                         reputationVO.getMessage("Invalid-Arguments")
                     );
 
@@ -110,7 +103,7 @@ public class ReputationCommand extends Command {
                         .join();
 
                     if (reputationPlayer == null) {
-                        player.sendMessage(
+                        sender.sendMessage(
                             reputationVO.getMessage("No-Player-Found")
                         );
 
@@ -127,7 +120,7 @@ public class ReputationCommand extends Command {
                 }
 
                 if (targetType == null) {
-                    player.sendMessage(
+                    sender.sendMessage(
                         reputationVO.getMessage("Invalid-Vote-Type")
                     );
 
@@ -139,7 +132,7 @@ public class ReputationCommand extends Command {
                     case DISLIKE -> reputationPlayer.setVotes(VoteType.DISLIKE, amount);
                 }
 
-                player.sendMessage(
+                sender.sendMessage(
                     reputationVO.getMessage(
                         "Player-Reputation",
                         "%player%", reputationPlayer.getName(),
@@ -158,7 +151,7 @@ public class ReputationCommand extends Command {
                     .join();
 
                 if (reputationPlayer == null) {
-                    player.sendMessage(
+                    sender.sendMessage(
                         reputationVO.getMessage("No-Player-Found")
                     );
 
@@ -166,7 +159,7 @@ public class ReputationCommand extends Command {
                 }
             }
 
-            if (args.length > 1) {
+            if (args.length == 2) {
                 VoteType targetType = null;
                 for (VoteType type : VoteType.values()) {
                     if (type.name().equalsIgnoreCase(args[1])) {
@@ -176,10 +169,17 @@ public class ReputationCommand extends Command {
                 }
 
                 if (targetType == null) {
-                    player.sendMessage(
+                    sender.sendMessage(
                         reputationVO.getMessage("Invalid-Vote-Type")
                     );
 
+                    return true;
+                }
+
+                if (!(sender instanceof Player player)) {
+                    sender.sendMessage(
+                        reputationVO.getMessage("Invalid-Arguments")
+                    );
                     return true;
                 }
 
@@ -255,7 +255,7 @@ public class ReputationCommand extends Command {
                 }
             }
 
-            player.sendMessage(
+            sender.sendMessage(
                 reputationVO.getMessage(
                     "Player-Reputation",
                     "%player%", reputationPlayer.getName(),
@@ -265,6 +265,13 @@ public class ReputationCommand extends Command {
                 )
             );
 
+            return true;
+        }
+
+        if (!(sender instanceof Player player)) {
+            sender.sendMessage(
+                reputationVO.getMessage("Invalid-Arguments")
+            );
             return true;
         }
 
