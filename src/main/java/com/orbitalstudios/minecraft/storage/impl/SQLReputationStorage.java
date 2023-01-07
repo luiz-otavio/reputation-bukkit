@@ -168,7 +168,7 @@ public class SQLReputationStorage implements ReputationStorage {
                 Instant updatedAt = resultSet.getTimestamp("updated_at")
                     .toInstant();
 
-                UUID uniqueId = UUID.fromString(resultSet.getString("player_uuid"));
+                UUID uniqueId = UUID.fromString(resultSet.getString("uuid"));
 
                 return new ReputationPlayer(uniqueId, name, votes, history, createdAt, updatedAt);
             } catch (Exception exception) {
@@ -265,6 +265,8 @@ public class SQLReputationStorage implements ReputationStorage {
 
                 preparedStatement.setString(5, voteType.name());
 
+                preparedStatement.setInt(6, 1);
+
                 int result = preparedStatement.executeUpdate();
                 if (result == 0) {
                     ReputationLogger.info("Vote not computed in database.");
@@ -282,7 +284,58 @@ public class SQLReputationStorage implements ReputationStorage {
     }
 
     @Override
-    public CompletableFuture<Boolean> hasVoted(@NotNull ReputationPlayer player, long seconds) {
+    public CompletableFuture<Boolean> updateVotes(@NotNull ReputationPlayer reputationPlayer, @NotNull VoteType voteType, int amount) {
+        return CompletableFuture.supplyAsync(() -> {
+            try (Connection connection = connector.getConnection()) {
+                PreparedStatement preparedStatement = connection.prepareStatement(
+                    sqlReader.getSql("clear_votes_log_by_uuid")
+                );
+
+                preparedStatement.setString(1, reputationPlayer.getUniqueId().toString());
+
+                int result = preparedStatement.executeUpdate();
+                if (result == 0) {
+                    ReputationLogger.info(result + " votes cleared in database.");
+                }
+
+                ReputationLogger.info("Votes cleared.");
+
+                preparedStatement = connection.prepareStatement(
+                    sqlReader.getSql("insert_vote_log")
+                );
+
+                preparedStatement.setString(1, reputationPlayer.getUniqueId().toString());
+                preparedStatement.setString(2, reputationPlayer.getName());
+
+                preparedStatement.setString(3, reputationPlayer.getUniqueId().toString());
+                preparedStatement.setString(4, reputationPlayer.getName());
+
+                preparedStatement.setString(5, voteType.name());
+
+                preparedStatement.setInt(6, amount);
+
+                result = preparedStatement.executeUpdate();
+                if (result == 0) {
+                    ReputationLogger.info("Votes not updated in database.");
+                    return false;
+                }
+
+                ReputationLogger.info("Votes updated in database.");
+                return true;
+            } catch (Exception exception) {
+                ReputationLogger.error("Failed to update votes", exception);
+            }
+
+            return false;
+        }, connector.getWorker());
+    }
+
+    @Override
+    public CompletableFuture<Boolean> hasVoted(
+        @NotNull ReputationPlayer player,
+        @NotNull ReputationPlayer target,
+        long seconds
+    ) {
         return CompletableFuture.supplyAsync(() -> {
             try (Connection connection = connector.getConnection()) {
                 PreparedStatement preparedStatement = connection.prepareStatement(
@@ -292,12 +345,11 @@ public class SQLReputationStorage implements ReputationStorage {
                 long time = System.currentTimeMillis() - (seconds * 1000);
 
                 preparedStatement.setString(1, player.getUniqueId().toString());
+                preparedStatement.setString(2, target.getUniqueId().toString());
 
-                Timestamp timestamp = Timestamp.from(
-                    Instant.ofEpochMilli(time)
-                );
+                Timestamp timestamp = Timestamp.from(Instant.ofEpochMilli(time));
 
-                preparedStatement.setTimestamp(2, timestamp);
+                preparedStatement.setTimestamp(3, timestamp);
 
                 return preparedStatement.executeQuery()
                     .next();
@@ -314,7 +366,7 @@ public class SQLReputationStorage implements ReputationStorage {
         return CompletableFuture.supplyAsync(() -> {
             try (Connection connection = connector.getConnection()) {
                 PreparedStatement preparedStatement = connection.prepareStatement(
-                    sqlReader.getSql("insert_user_by_uuid")
+                    sqlReader.getSql("update_user_by_uuid")
                 );
 
                 for (ReputationPlayer player : players) {
@@ -332,6 +384,8 @@ public class SQLReputationStorage implements ReputationStorage {
                     );
 
                     preparedStatement.setString(5, player.getUniqueId().toString());
+
+                    preparedStatement.addBatch();
                 }
 
                 int[] result = preparedStatement.executeBatch();

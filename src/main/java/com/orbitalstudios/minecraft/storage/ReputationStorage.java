@@ -33,7 +33,13 @@ public interface ReputationStorage {
         @NotNull VoteType voteType
     );
 
-    CompletableFuture<Boolean> hasVoted(@NotNull ReputationPlayer player, long seconds);
+    CompletableFuture<Boolean> updateVotes(
+        @NotNull ReputationPlayer reputationPlayer,
+        @NotNull VoteType voteType,
+        int amount
+    );
+
+    CompletableFuture<Boolean> hasVoted(@NotNull ReputationPlayer player, @NotNull ReputationPlayer target, long seconds);
 
     CompletableFuture<Boolean> batchPlayers(@NotNull ReputationPlayer... players);
 

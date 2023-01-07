@@ -5,6 +5,7 @@ CREATE TABLE IF NOT EXISTS `reputation_votes`(
     `target_uuid` CHAR(36) NOT NULL,
     `target_player_name` VARCHAR(16) NOT NULL,
     `vote` ENUM('LIKE', 'DISLIKE') NOT NULL,
+    `amount` INT NOT NULL,
     `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;

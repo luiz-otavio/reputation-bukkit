@@ -3,5 +3,6 @@ INSERT INTO `reputation_votes` (
     `player_name`,
     `target_uuid`,
     `target_player_name`,
-    `vote`
-) VALUES (?, ?, ?, ?, ?);
+    `vote`,
+    `amount`
+) VALUES (?, ?, ?, ?, ?, ?);
