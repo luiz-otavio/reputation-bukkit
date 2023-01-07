@@ -1,10 +1,12 @@
 package com.orbitalstudios.minecraft.extensions;
 
+import com.orbitalstudios.minecraft.ReputationPlugin;
 import com.orbitalstudios.minecraft.pojo.ReputationPlayer;
-import com.orbitalstudios.minecraft.pojo.vote.VoteType;
 import com.orbitalstudios.minecraft.repository.ReputationRepository;
+import com.orbitalstudios.minecraft.vo.ReputationVO;
 import lombok.RequiredArgsConstructor;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -17,10 +19,11 @@ import org.jetbrains.annotations.Nullable;
 public class TotalExtension extends PlaceholderExpansion {
 
     private final ReputationRepository reputationRepository;
+    private final ReputationVO reputationVO;
 
     @Override
     public @NotNull String getIdentifier() {
-        return "reputation_total";
+        return "reputation-total";
     }
 
     @Override
@@ -39,18 +42,26 @@ public class TotalExtension extends PlaceholderExpansion {
     }
 
     @Override
-    public @Nullable String onPlaceholderRequest(Player player, @NotNull String params) {
-        if (player == null) {
-            return null;
-        }
+    public @Nullable String getRequiredPlugin() {
+        return ReputationPlugin.getInstance()
+            .getName();
+    }
 
+    @Override
+    public @Nullable String onRequest(OfflinePlayer player, @NotNull String params) {
+        return super.onRequest(player, params);
+    }
+
+    @Override
+    public @Nullable String onPlaceholderRequest(Player player, @NotNull String params) {
         ReputationPlayer reputationPlayer = reputationRepository.getReputationPlayer(player.getUniqueId());
+
         if (reputationPlayer == null) {
             return null;
         }
 
         return String.valueOf(
-            reputationPlayer.getVotes(VoteType.LIKE) - reputationPlayer.getVotes(VoteType.DISLIKE)
+            reputationPlayer.getReputation(reputationVO)
         );
     }
 }

@@ -1,5 +1,6 @@
 package com.orbitalstudios.minecraft.extensions;
 
+import com.orbitalstudios.minecraft.ReputationPlugin;
 import com.orbitalstudios.minecraft.pojo.ReputationPlayer;
 import com.orbitalstudios.minecraft.pojo.vote.VoteType;
 import com.orbitalstudios.minecraft.repository.ReputationRepository;
@@ -20,7 +21,7 @@ public class DislikeExtension extends PlaceholderExpansion {
 
     @Override
     public @NotNull String getIdentifier() {
-        return "reputation_dislikes";
+        return "reputation-dislikes";
     }
 
     @Override
@@ -36,6 +37,12 @@ public class DislikeExtension extends PlaceholderExpansion {
     @Override
     public boolean persist() {
         return true;
+    }
+
+    @Override
+    public @Nullable String getRequiredPlugin() {
+        return ReputationPlugin.getInstance()
+            .getName();
     }
 
     @Override

@@ -1,5 +1,6 @@
 package com.orbitalstudios.minecraft.extensions;
 
+import com.orbitalstudios.minecraft.ReputationPlugin;
 import com.orbitalstudios.minecraft.pojo.ReputationPlayer;
 import com.orbitalstudios.minecraft.pojo.vote.VoteType;
 import com.orbitalstudios.minecraft.repository.ReputationRepository;
@@ -22,7 +23,13 @@ public class ColorExtension extends PlaceholderExpansion {
 
     @Override
     public @NotNull String getIdentifier() {
-        return "reputation_likes";
+        return "reputation-color";
+    }
+
+    @Override
+    public @Nullable String getRequiredPlugin() {
+        return ReputationPlugin.getInstance()
+            .getName();
     }
 
     @Override
