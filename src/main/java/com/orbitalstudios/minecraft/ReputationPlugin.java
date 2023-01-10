@@ -176,11 +176,11 @@ public class ReputationPlugin extends JavaPlugin {
         }
 
         expansions = new PlaceholderExpansion[] {
-            new ColorExtension(reputationRepository, reputationVO),
-            new TotalExtension(reputationRepository, reputationVO),
-            new DislikeExtension(reputationRepository),
-            new LikeExtension(reputationRepository),
-            new PercentageExtension(reputationRepository)
+            new ColorExtension(reputationRepository, storage, reputationVO),
+            new TotalExtension(reputationRepository, storage, reputationVO),
+            new DislikeExtension(reputationRepository, storage),
+            new LikeExtension(reputationRepository, storage),
+            new PercentageExtension(reputationRepository, storage)
         };
 
         for (PlaceholderExpansion expansion : expansions) {
