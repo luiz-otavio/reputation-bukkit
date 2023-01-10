@@ -11,7 +11,6 @@ import com.orbitalstudios.minecraft.repository.ReputationRepository;
 import com.orbitalstudios.minecraft.storage.ReputationStorage;
 import com.orbitalstudios.minecraft.storage.connector.ReputationStorageConnector;
 import com.orbitalstudios.minecraft.storage.connector.impl.HikariStorageConnector;
-import com.orbitalstudios.minecraft.storage.impl.DevelopmentReputationStorage;
 import com.orbitalstudios.minecraft.storage.impl.SQLReputationStorage;
 import com.orbitalstudios.minecraft.util.Colors;
 import com.orbitalstudios.minecraft.vo.ReputationVO;
@@ -73,6 +72,12 @@ public class ReputationPlugin extends JavaPlugin {
             throw new NullPointerException("Settings is null");
         }
 
+        ConfigurationSection permissions = settings.getConfigurationSection("Permissions");
+
+        if (permissions == null) {
+            throw new NullPointerException("Permissions is null");
+        }
+
         if (messages == null) {
             throw new NullPointerException("Messages is null");
         }
@@ -93,10 +98,18 @@ public class ReputationPlugin extends JavaPlugin {
             messagesMap.put(key, ChatColor.translateAlternateColorCodes('&', messages.getString(key)));
         }
 
+        ImmutableMap<String, String> permissionsMap = ImmutableMap.<String, String>builder()
+            .put("Admin", permissions.getString("Admin"))
+            .put("Like", permissions.getString("Like"))
+            .put("Dislike", permissions.getString("Dislike"))
+            .put("Others", permissions.getString("Others"))
+            .put("See", permissions.getString("See"))
+            .build();
+
         reputationVO = new ReputationVO(
             settings.getInt("Dislike-Cooldown", 60),
-            settings.getString("Admin-Permission", "reputation.admin"),
             voteTypes,
+            permissionsMap,
             voteColors,
             messagesMap
         );

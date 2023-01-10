@@ -1,7 +1,13 @@
 Settings:
     # Time in seconds between each check
     Dislike-Cooldown: 60
-    Admin-Permission: 'reputation.admin'
+
+    Permissions:
+        Admin: 'reputation.admin'
+        Like: 'reputation.like'
+        Dislike: 'reputation.dislike'
+        Others: 'reputation.see.others'
+        See: 'reputation.see'
 
     Dislike-Reputation-Change: 0.25
     Like-Reputation-Change: 0.25
@@ -10,7 +16,7 @@ Settings:
     Reputation-Color-Like: '&a'
 
 Messages:
-    Dislike-Cooldown: '&cYou must wait %cooldown% seconds before you can dislike again.'
+    Dislike-Cooldown: '&cYou must wait %cooldown% before you can dislike again.'
     Dislike-Message: '&cYou disliked %player%!'
     Like-Message: '&aYou liked %player%!'
     No-Permission: '&cYou do not have permission to do that.'

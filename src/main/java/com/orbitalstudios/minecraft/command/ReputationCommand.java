@@ -6,17 +6,18 @@ import com.orbitalstudios.minecraft.pojo.ReputationPlayer;
 import com.orbitalstudios.minecraft.pojo.vote.VoteType;
 import com.orbitalstudios.minecraft.repository.ReputationRepository;
 import com.orbitalstudios.minecraft.storage.ReputationStorage;
+import com.orbitalstudios.minecraft.util.Formatter;
 import com.orbitalstudios.minecraft.util.Synchronize;
 import com.orbitalstudios.minecraft.vo.ReputationVO;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.Sound;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 import java.time.Instant;
+import java.time.temporal.ChronoField;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -54,7 +55,7 @@ public class ReputationCommand extends Command {
     public boolean execute(@NotNull CommandSender sender, @NotNull String commandLabel, @NotNull String[] args) {
         if (args.length > 0) {
             if(args.length == 1 && args[0].equalsIgnoreCase("reload")) {
-                if (!sender.isOp() || !sender.hasPermission(reputationVO.adminPermission())) {
+                if (!sender.isOp() && !reputationVO.hasPermission(sender, "Admin")) {
                     sender.sendMessage(ChatColor.RED + "You don't have permission to do this.");
                     return true;
                 }
@@ -70,7 +71,7 @@ public class ReputationCommand extends Command {
             }
 
             if (args[0].equalsIgnoreCase("set")) {
-                if (!sender.hasPermission(reputationVO.adminPermission()) && !sender.isOp()) {
+                if (!reputationVO.hasPermission(sender, "Admin") && !sender.isOp()) {
                     sender.sendMessage(
                         reputationVO.getMessage("No-Permission")
                     );
@@ -147,7 +148,11 @@ public class ReputationCommand extends Command {
                 ).thenAccept(success -> {
                     ReputationLogger.info("Player reputation has been set to " + amount + " by " + sender.getName() + ".");
                     sender.sendMessage(
-                        ChatColor.GREEN + "Player reputation has been set to " + amount + ". in database."
+                        reputationVO.getMessage(
+                            "Reputation-Updated",
+                            "%amount%", amount,
+                            "%player%", args[1]
+                        )
                     );
                 });
 
@@ -195,6 +200,19 @@ public class ReputationCommand extends Command {
                     return true;
                 }
 
+                String permission = switch (targetType) {
+                    case DISLIKE -> "Dislike";
+                    case LIKE -> "Like";
+                };
+
+                if (!reputationVO.hasPermission(sender, permission) && !sender.isOp()) {
+                    sender.sendMessage(
+                        reputationVO.getMessage("No-Permission")
+                    );
+
+                    return true;
+                }
+
                 if (!(sender instanceof Player player)) {
                     sender.sendMessage(
                         reputationVO.getMessage("Invalid-Arguments")
@@ -224,12 +242,14 @@ public class ReputationCommand extends Command {
 
                 VoteType finalTargetType = targetType;
                 reputationStorage.hasVoted(author, reputationPlayer, reputationVO.dislikeCooldown())
-                    .thenAccept(hasVoted -> {
-                        if (hasVoted) {
+                    .thenAccept(instant -> {
+                        if (instant != null) {
+                            long diff = instant.get(ChronoField.MILLI_OF_SECOND) - System.currentTimeMillis();
+
                             player.sendMessage(
                                 reputationVO.getMessage(
                                     "Dislike-Cooldown",
-                                    "%cooldown%", reputationVO.dislikeCooldown()
+                                    "%cooldown%", Formatter.format(diff)
                                 )
                             );
 
@@ -255,8 +275,6 @@ public class ReputationCommand extends Command {
                                     .thenAccept(unused -> {
                                         ReputationLogger.info("Vote registered: %s -> %s", finalAuthor.getName(), finalReputationPlayer.getName());
                                     });
-
-                                player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
                             }
                             case DISLIKE -> {
                                 Synchronize.callToSync(() -> {
@@ -276,11 +294,17 @@ public class ReputationCommand extends Command {
                                     .thenAccept(unused -> {
                                         ReputationLogger.info("Vote registered: %s -> %s", finalAuthor.getName(), finalReputationPlayer.getName());
                                     });
-
-                                player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
                             }
                         }
                     });
+
+                return true;
+            }
+
+            if (!reputationVO.hasPermission(sender, "Others") && !sender.isOp()) {
+                sender.sendMessage(
+                    reputationVO.getMessage("No-Permission")
+                );
 
                 return true;
             }
@@ -305,6 +329,14 @@ public class ReputationCommand extends Command {
             return true;
         }
 
+        if (!reputationVO.hasPermission(sender, "See") && !sender.isOp()) {
+            sender.sendMessage(
+                reputationVO.getMessage("No-Permission")
+            );
+
+            return true;
+        }
+
         ReputationPlayer reputationPlayer = reputationRepository.getReputationPlayer(player.getUniqueId());
         if (reputationPlayer == null) {
             ReputationLogger.error("Reputation player not found");
@@ -326,12 +358,6 @@ public class ReputationCommand extends Command {
             )
         );
 
-        if (reputation < 0) {
-            player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1, 1);
-        } else {
-            player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_CELEBRATE, 1, 1);
-        }
-
         return true;
     }
 
@@ -340,7 +366,10 @@ public class ReputationCommand extends Command {
         if (args.length == 1 && args[0].isEmpty()) {
             List<String> range = new ArrayList<>(Bukkit.getOnlinePlayers().size() + 1);
 
-            range.add("set");
+            if (reputationVO.hasPermission(sender, "Admin") || sender.isOp()) {
+                range.add("reload");
+                range.add("set");
+            }
 
             for (Player player : Bukkit.getOnlinePlayers()) {
                 range.add(player.getName());

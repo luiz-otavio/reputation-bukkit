@@ -2,6 +2,8 @@ package com.orbitalstudios.minecraft.vo;
 
 import com.orbitalstudios.minecraft.pojo.vote.VoteType;
 import org.bukkit.ChatColor;
+import org.bukkit.command.CommandSender;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
 
@@ -11,8 +13,9 @@ import java.util.Map;
  **/
 public record ReputationVO(
     long dislikeCooldown,
-    String adminPermission,
+
     Map<VoteType, Float> reputationChange,
+    Map<String, String> permissions,
     Map<VoteType, ChatColor> reputationColor,
     Map<String, String> messages
 ) {
@@ -44,6 +47,10 @@ public record ReputationVO(
         }
 
         return message;
+    }
+
+    public boolean hasPermission(@NotNull CommandSender commandSender, @NotNull String permission) {
+        return commandSender.hasPermission(permissions.getOrDefault(permission, "reputation." + permission));
     }
 
 }
