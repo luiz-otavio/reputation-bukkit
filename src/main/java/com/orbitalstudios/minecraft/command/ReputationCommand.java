@@ -117,6 +117,8 @@ public class ReputationCommand extends Command {
                         );
 
                         return true;
+                    } else {
+                        reputationRepository.putReputationPlayer(reputationPlayer);
                     }
                 }
 
@@ -180,6 +182,8 @@ public class ReputationCommand extends Command {
                     );
 
                     return true;
+                } else {
+                    reputationRepository.putReputationPlayer(reputationPlayer);
                 }
             }
 
@@ -244,12 +248,13 @@ public class ReputationCommand extends Command {
                 reputationStorage.hasVoted(author, reputationPlayer, reputationVO.dislikeCooldown())
                     .thenAccept(instant -> {
                         if (instant != null) {
-                            long diff = instant.get(ChronoField.MILLI_OF_SECOND) - System.currentTimeMillis();
+                            long diff = System.currentTimeMillis() - instant.toEpochMilli(),
+                                toFormat = reputationVO.dislikeCooldown() * 1000 - diff;
 
                             player.sendMessage(
                                 reputationVO.getMessage(
                                     "Dislike-Cooldown",
-                                    "%cooldown%", Formatter.format(diff)
+                                    "%cooldown%", Formatter.format(toFormat)
                                 )
                             );
 
@@ -258,12 +263,6 @@ public class ReputationCommand extends Command {
 
                         switch (finalTargetType) {
                             case LIKE -> {
-                                Synchronize.callToSync(() -> {
-                                    finalReputationPlayer.computeVote(VoteType.LIKE);
-                                });
-
-                                finalAuthor.setHistory(VoteType.LIKE, Instant.now());
-
                                 player.sendMessage(
                                     reputationVO.getMessage(
                                         "Like-Message",
@@ -272,17 +271,22 @@ public class ReputationCommand extends Command {
                                 );
 
                                 reputationStorage.computeVote(finalAuthor, finalReputationPlayer, VoteType.LIKE)
-                                    .thenAccept(unused -> {
+                                    .thenAccept(success -> {
+                                        if (!success) {
+                                            ReputationLogger.warn("Failed to compute vote for " + finalReputationPlayer.getName() + ".");
+                                            return;
+                                        }
+
                                         ReputationLogger.info("Vote registered: %s -> %s", finalAuthor.getName(), finalReputationPlayer.getName());
+
+                                        Synchronize.callToSync(() -> {
+                                            finalReputationPlayer.computeVote(VoteType.LIKE);
+                                        });
+
+                                        finalAuthor.setHistory(VoteType.LIKE, Instant.now());
                                     });
                             }
                             case DISLIKE -> {
-                                Synchronize.callToSync(() -> {
-                                    finalReputationPlayer.computeVote(VoteType.DISLIKE);
-                                });
-
-                                finalAuthor.setHistory(VoteType.DISLIKE, Instant.now());
-
                                 player.sendMessage(
                                     reputationVO.getMessage(
                                         "Dislike-Message",
@@ -291,8 +295,19 @@ public class ReputationCommand extends Command {
                                 );
 
                                 reputationStorage.computeVote(finalAuthor, finalReputationPlayer, VoteType.DISLIKE)
-                                    .thenAccept(unused -> {
+                                    .thenAccept(success -> {
+                                        if (!success) {
+                                            ReputationLogger.warn("Vote not registered: %s -> %s", finalAuthor.getName(), finalReputationPlayer.getName());
+                                            return;
+                                        }
+
                                         ReputationLogger.info("Vote registered: %s -> %s", finalAuthor.getName(), finalReputationPlayer.getName());
+
+                                        Synchronize.callToSync(() -> {
+                                            finalReputationPlayer.computeVote(VoteType.DISLIKE);
+                                        });
+
+                                        finalAuthor.setHistory(VoteType.DISLIKE, Instant.now());
                                     });
                             }
                         }
