@@ -3,6 +3,7 @@ package com.orbitalstudios.minecraft.extensions;
 import com.orbitalstudios.minecraft.ReputationPlugin;
 import com.orbitalstudios.minecraft.pojo.ReputationPlayer;
 import com.orbitalstudios.minecraft.repository.ReputationRepository;
+import com.orbitalstudios.minecraft.storage.ReputationStorage;
 import com.orbitalstudios.minecraft.vo.ReputationVO;
 import lombok.RequiredArgsConstructor;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
@@ -19,6 +20,7 @@ import org.jetbrains.annotations.Nullable;
 public class TotalExtension extends PlaceholderExpansion {
 
     private final ReputationRepository reputationRepository;
+    private final ReputationStorage reputationStorage;
     private final ReputationVO reputationVO;
 
     @Override
@@ -57,7 +59,14 @@ public class TotalExtension extends PlaceholderExpansion {
         ReputationPlayer reputationPlayer = reputationRepository.getReputationPlayer(player.getUniqueId());
 
         if (reputationPlayer == null) {
-            return null;
+            reputationPlayer = reputationStorage.retrievePlayer(player.getUniqueId())
+                .join();
+
+            if (reputationPlayer != null) {
+                reputationRepository.putReputationPlayer(reputationPlayer);
+            } else {
+                return null;
+            }
         }
 
         return String.valueOf(
