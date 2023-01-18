@@ -60,8 +60,6 @@ public class ReputationCommand extends Command {
                     return true;
                 }
 
-                reputationPlugin.reloadConfig();
-
                 reputationPlugin.onDisable();
                 reputationPlugin.onLoad();
                 reputationPlugin.onEnable();

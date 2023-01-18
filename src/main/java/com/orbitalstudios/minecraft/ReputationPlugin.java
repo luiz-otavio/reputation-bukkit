@@ -19,6 +19,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -63,7 +64,9 @@ public class ReputationPlugin extends JavaPlugin {
         saveDefaultConfig();
 
         ReputationLogger.info("Loading configuration...");
-        FileConfiguration fileConfiguration = getConfig();
+        FileConfiguration fileConfiguration = YamlConfiguration.loadConfiguration(
+            new File(getDataFolder(), "config.yml")
+        );
 
         ConfigurationSection settings = fileConfiguration.getConfigurationSection("Settings"),
             messages = fileConfiguration.getConfigurationSection("Messages");
