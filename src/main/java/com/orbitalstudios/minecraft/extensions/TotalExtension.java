@@ -39,17 +39,6 @@ public class TotalExtension extends PlaceholderExpansion {
     }
 
     @Override
-    public boolean persist() {
-        return true;
-    }
-
-    @Override
-    public @Nullable String getRequiredPlugin() {
-        return ReputationPlugin.getInstance()
-            .getName();
-    }
-
-    @Override
     public @Nullable String onRequest(OfflinePlayer player, @NotNull String params) {
         return super.onRequest(player, params);
     }
