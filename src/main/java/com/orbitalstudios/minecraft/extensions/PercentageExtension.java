@@ -37,17 +37,6 @@ public class PercentageExtension extends PlaceholderExpansion {
     }
 
     @Override
-    public boolean persist() {
-        return true;
-    }
-
-    @Override
-    public @Nullable String getRequiredPlugin() {
-        return ReputationPlugin.getInstance()
-            .getName();
-    }
-
-    @Override
     public @Nullable String onPlaceholderRequest(Player player, @NotNull String params) {
         if (player == null) {
             return null;

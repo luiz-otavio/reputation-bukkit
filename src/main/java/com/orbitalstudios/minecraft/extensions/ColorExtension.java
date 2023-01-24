@@ -29,12 +29,6 @@ public class ColorExtension extends PlaceholderExpansion {
     }
 
     @Override
-    public @Nullable String getRequiredPlugin() {
-        return ReputationPlugin.getInstance()
-            .getName();
-    }
-
-    @Override
     public @NotNull String getAuthor() {
         return "Luiz O. F. Corrêa";
     }

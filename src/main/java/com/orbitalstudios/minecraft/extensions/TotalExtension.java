@@ -39,11 +39,6 @@ public class TotalExtension extends PlaceholderExpansion {
     }
 
     @Override
-    public @Nullable String onRequest(OfflinePlayer player, @NotNull String params) {
-        return super.onRequest(player, params);
-    }
-
-    @Override
     public @Nullable String onPlaceholderRequest(Player player, @NotNull String params) {
         ReputationPlayer reputationPlayer = reputationRepository.getReputationPlayer(player.getUniqueId());
 
