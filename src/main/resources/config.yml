@@ -28,3 +28,4 @@ Messages:
     Invalid-Arguments: '&cInvalid arguments.'
     Cannot-Vote-Yourself: '&cYou cannot vote for yourself.'
     Reputation-Updated: '&aYour reputation has been updated.'
+    Reload: '&aReloaded config.'

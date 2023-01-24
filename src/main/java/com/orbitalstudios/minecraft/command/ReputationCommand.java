@@ -64,7 +64,10 @@ public class ReputationCommand extends Command {
                 reputationPlugin.onLoad();
                 reputationPlugin.onEnable();
 
-                sender.sendMessage(ChatColor.GREEN + "Reputation reloaded.");
+                sender.sendMessage(
+                    reputationVO.getMessage("Reload")
+                );
+
                 return true;
             }
 
