@@ -13,7 +13,10 @@ public class Synchronize {
         if (Bukkit.isPrimaryThread()) {
             runnable.run();
         } else {
-            Bukkit.getScheduler().runTask(ReputationPlugin.getInstance(), runnable);
+            Bukkit.getScheduler().callSyncMethod(ReputationPlugin.getInstance(), () -> {
+                runnable.run();
+                return null;
+            });
         }
     }
 
