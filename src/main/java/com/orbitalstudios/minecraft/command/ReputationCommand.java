@@ -11,18 +11,19 @@ import com.orbitalstudios.minecraft.util.Synchronize;
 import com.orbitalstudios.minecraft.vo.ReputationVO;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 import java.time.Instant;
-import java.time.temporal.ChronoField;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author Luiz O. F. Corrêa
@@ -107,9 +108,18 @@ public class ReputationCommand extends Command {
                     return true;
                 }
 
-                ReputationPlayer reputationPlayer = reputationRepository.getReputationPlayer(args[1]);
+                OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayerIfCached(args[1]);
+                if (offlinePlayer == null) {
+                    sender.sendMessage(
+                        reputationVO.getMessage("No-Player-Found")
+                    );
+
+                    return true;
+                }
+
+                ReputationPlayer reputationPlayer = reputationRepository.getReputationPlayer(offlinePlayer.getUniqueId());
                 if (reputationPlayer == null) {
-                    reputationPlayer = reputationStorage.retrievePlayer(args[1])
+                    reputationPlayer = reputationStorage.retrievePlayer(offlinePlayer.getUniqueId())
                         .join();
 
                     if (reputationPlayer == null) {
@@ -172,9 +182,18 @@ public class ReputationCommand extends Command {
                 return true;
             }
 
-            ReputationPlayer reputationPlayer = reputationRepository.getReputationPlayer(args[0]);
+            OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayerIfCached(args[0]);
+            if (offlinePlayer == null) {
+                sender.sendMessage(
+                    reputationVO.getMessage("No-Player-Found")
+                );
+
+                return true;
+            }
+
+            ReputationPlayer reputationPlayer = reputationRepository.getReputationPlayer(offlinePlayer.getUniqueId());
             if (reputationPlayer == null) {
-                reputationPlayer = reputationStorage.retrievePlayer(args[0])
+                reputationPlayer = reputationStorage.retrievePlayer(offlinePlayer.getUniqueId())
                     .join();
 
                 if (reputationPlayer == null) {
@@ -379,43 +398,49 @@ public class ReputationCommand extends Command {
 
     @Override
     public @NotNull List<String> tabComplete(@NotNull CommandSender sender, @NotNull String alias, @NotNull String[] args) throws IllegalArgumentException {
-        if (args.length == 1 && args[0].isEmpty()) {
-            List<String> range = new ArrayList<>(Bukkit.getOnlinePlayers().size() + 1);
+        if (args.length > 1) {
+            if (args[0].equalsIgnoreCase("set")) {
+                if (args.length == 2) {
+                    return Bukkit.getOnlinePlayers()
+                        .stream()
+                        .map(Player::getName)
+                        .filter(name -> name.startsWith(args[1]))
+                        .collect(Collectors.toList());
+                }
 
-            if (reputationVO.hasPermission(sender, "Admin") || sender.isOp()) {
-                range.add("reload");
-                range.add("set");
+                if (args.length == 3 && !args[1].isEmpty()) {
+                    return Stream.of("like", "dislike")
+                        .filter(name -> name.startsWith(args[2]))
+                        .collect(Collectors.toList());
+                }
+
+                return Collections.emptyList();
             }
 
-            for (Player player : Bukkit.getOnlinePlayers()) {
-                range.add(player.getName());
+            if (args[0].equalsIgnoreCase("reload")) {
+                return Collections.emptyList();
             }
 
-            return range;
+            if (args.length == 2 && !args[0].isEmpty()) {
+                return Stream.of("like", "dislike")
+                    .filter(name -> name.startsWith(args[1]))
+                    .collect(Collectors.toList());
+            }
+
+            return Collections.emptyList();
         }
 
-        if (args[0].equalsIgnoreCase("set") && sender.isOp()) {
-            return switch (args.length) {
-                case 2 -> Bukkit.getOnlinePlayers()
-                    .stream()
-                    .map(Player::getName)
-                    .collect(Collectors.toList());
-                case 3 -> Arrays.stream(VoteType.values())
-                    .map(Enum::name)
-                    .collect(Collectors.toList());
-                default -> Collections.emptyList();
-            };
-        } else {
-            if (Bukkit.getPlayerExact(args[0]) == null) {
-                return Bukkit.getOnlinePlayers()
-                    .stream()
-                    .map(Player::getName)
-                    .collect(Collectors.toList());
-            }
+        List<String> range = new ArrayList<>(Bukkit.getOnlinePlayers().size() + 2);
 
-            return Arrays.stream(VoteType.values())
-                .map(Enum::name)
-                .collect(Collectors.toList());
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            range.add(player.getName());
         }
+
+        range.add("reload");
+        range.add("set");
+
+        return range.stream()
+            .filter(name -> name.startsWith(args[0]))
+            .collect(Collectors.toList());
     }
 }
