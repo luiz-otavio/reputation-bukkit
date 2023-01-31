@@ -35,6 +35,10 @@ public class ReputationHandler implements Listener {
                 if (reputationPlayer == null) {
                     reputationPlayer = reputationStorage.createPlayer(uniqueId, event.getName())
                         .join();
+                } else {
+                    if (!reputationPlayer.getName().equals(event.getName())) {
+                        reputationPlayer.setName(event.getName());
+                    }
                 }
 
                 reputationRepository.putReputationPlayer(reputationPlayer);
