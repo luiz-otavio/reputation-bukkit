@@ -205,8 +205,11 @@ public class ReputationPlugin extends JavaPlugin {
             return;
         }
 
-        for (PlaceholderExpansion expansion : expansions) {
-            expansion.unregister();
+        PluginManager pluginManager = Bukkit.getPluginManager();
+        if (pluginManager.isPluginEnabled("PlaceholderAPI")) {
+            for (PlaceholderExpansion expansion : expansions) {
+                expansion.unregister();
+            }
         }
 
         ReputationPlayer[] reputationPlayers = reputationRepository.getReputationPlayers()
