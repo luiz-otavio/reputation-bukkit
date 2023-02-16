@@ -1,6 +1,5 @@
 package com.orbitalstudios.minecraft.extensions;
 
-import com.orbitalstudios.minecraft.ReputationPlugin;
 import com.orbitalstudios.minecraft.pojo.ReputationPlayer;
 import com.orbitalstudios.minecraft.pojo.vote.VoteType;
 import com.orbitalstudios.minecraft.repository.ReputationRepository;
@@ -58,11 +57,9 @@ public class ColorExtension extends PlaceholderExpansion {
 
         float reputation = reputationPlayer.getReputation(reputationVO);
         if (reputation > 0) {
-            return "&" + reputationVO.getReputationColor(VoteType.LIKE)
-                .getChar();
+            return reputationVO.getReputationColor(VoteType.LIKE);
         } else {
-            return "&" + reputationVO.getReputationColor(VoteType.DISLIKE)
-                .getChar();
+            return reputationVO.getReputationColor(VoteType.DISLIKE);
         }
     }
 }

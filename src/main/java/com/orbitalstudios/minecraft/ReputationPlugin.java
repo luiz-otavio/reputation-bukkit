@@ -90,9 +90,10 @@ public class ReputationPlugin extends JavaPlugin {
             .put(VoteType.DISLIKE, (float) settings.getDouble("Dislike-Reputation-Change"))
             .build();
 
-        ImmutableMap<VoteType, ChatColor> voteColors = ImmutableMap.<VoteType, ChatColor>builder()
+        ImmutableMap<VoteType, String> voteColors = ImmutableMap.<VoteType, String>builder()
             .put(VoteType.LIKE, Colors.getColor(settings.getString("Reputation-Color-Like")))
             .put(VoteType.DISLIKE, Colors.getColor(settings.getString("Reputation-Color-Dislike")))
+            .put(VoteType.NEUTRAL, Colors.getColor(settings.getString("Reputation-Color-Neutral")))
             .build();
 
         Map<String, String> messagesMap = new LinkedHashMap<>();

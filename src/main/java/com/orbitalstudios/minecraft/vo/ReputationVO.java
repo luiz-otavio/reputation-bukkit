@@ -16,7 +16,7 @@ public record ReputationVO(
 
     Map<VoteType, Float> reputationChange,
     Map<String, String> permissions,
-    Map<VoteType, ChatColor> reputationColor,
+    Map<VoteType, String> reputationColor,
     Map<String, String> messages
 ) {
 
@@ -24,7 +24,7 @@ public record ReputationVO(
         return reputationChange.get(voteType);
     }
 
-    public ChatColor getReputationColor(VoteType voteType) {
+    public String getReputationColor(VoteType voteType) {
         return reputationColor.get(voteType);
     }
 

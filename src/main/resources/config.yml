@@ -14,6 +14,7 @@ Settings:
 
     Reputation-Color-Dislike: '&c'
     Reputation-Color-Like: '&a'
+    Reputation-Color-Neutral: '&7'
 
 Messages:
     Dislike-Cooldown: '&cYou must wait %cooldown% before you can dislike again.'
