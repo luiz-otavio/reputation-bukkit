@@ -160,24 +160,7 @@ public class ReputationCommand extends Command {
                     amount
                 ).thenAccept(success -> {
                     ReputationLogger.info("Player reputation has been set to " + amount + " by " + sender.getName() + ".");
-                    sender.sendMessage(
-                        reputationVO.getMessage(
-                            "Reputation-Updated",
-                            "%amount%", amount,
-                            "%player%", args[1]
-                        )
-                    );
                 });
-
-                sender.sendMessage(
-                    reputationVO.getMessage(
-                        "Player-Reputation",
-                        "%player%", reputationPlayer.getName(),
-                        "%reputation%", reputationPlayer.getReputation(reputationVO),
-                        "%likes%", reputationPlayer.getVotes(VoteType.LIKE),
-                        "%dislikes%", reputationPlayer.getVotes(VoteType.DISLIKE)
-                    )
-                );
 
                 return true;
             }
@@ -226,7 +209,7 @@ public class ReputationCommand extends Command {
 
                 String permission = switch (targetType) {
                     case DISLIKE -> "Dislike";
-                    case LIKE -> "Like";
+                    case LIKE, NEUTRAL -> "Like";
                 };
 
                 if (!reputationVO.hasPermission(sender, permission) && !sender.isOp()) {
