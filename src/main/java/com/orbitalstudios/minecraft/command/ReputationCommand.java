@@ -19,7 +19,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -60,6 +59,8 @@ public class ReputationCommand extends Command {
                     sender.sendMessage(ChatColor.RED + "You don't have permission to do this.");
                     return true;
                 }
+
+                reputationPlugin.reloadConfig();
 
                 reputationPlugin.onDisable();
                 reputationPlugin.onLoad();

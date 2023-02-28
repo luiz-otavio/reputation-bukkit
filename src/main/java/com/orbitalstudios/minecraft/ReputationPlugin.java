@@ -17,9 +17,9 @@ import com.orbitalstudios.minecraft.vo.ReputationVO;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.command.CommandMap;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -55,6 +55,8 @@ public class ReputationPlugin extends JavaPlugin {
 
     private PlaceholderExpansion[] expansions;
 
+    private ReputationCommand command;
+
     @Override
     public void onLoad() {
         if (!getDataFolder().exists()) {
@@ -64,9 +66,7 @@ public class ReputationPlugin extends JavaPlugin {
         saveDefaultConfig();
 
         ReputationLogger.info("Loading configuration...");
-        FileConfiguration fileConfiguration = YamlConfiguration.loadConfiguration(
-            new File(getDataFolder(), "config.yml")
-        );
+        FileConfiguration fileConfiguration = getConfig();
 
         ConfigurationSection settings = fileConfiguration.getConfigurationSection("Settings"),
             messages = fileConfiguration.getConfigurationSection("Messages");
@@ -151,20 +151,19 @@ public class ReputationPlugin extends JavaPlugin {
             });
 
         storage = new SQLReputationStorage(storageConnector);
-
 //        storage = new DevelopmentReputationStorage();
 
         reputationRepository = new ReputationRepository();
 
-        getServer().getCommandMap().register(
-            "reputation",
-            new ReputationCommand(
-                storage,
-                reputationRepository,
-                reputationVO,
-                this
-            )
+        command = new ReputationCommand(
+            storage,
+            reputationRepository,
+            reputationVO,
+            this
         );
+
+        getServer().getCommandMap()
+            .register("reputation", "reputation", command);
 
         ReputationLogger.info("Registering listeners...");
         PluginManager pluginManager = Bukkit.getPluginManager();
@@ -179,7 +178,7 @@ public class ReputationPlugin extends JavaPlugin {
             return;
         }
 
-        expansions = new PlaceholderExpansion[] {
+        expansions = new PlaceholderExpansion[]{
             new ColorExtension(reputationRepository, storage, reputationVO),
             new TotalExtension(reputationRepository, storage, reputationVO),
             new DislikeExtension(reputationRepository, storage),
@@ -199,6 +198,13 @@ public class ReputationPlugin extends JavaPlugin {
     @Override
     public void onDisable() {
         HandlerList.unregisterAll(this);
+
+        CommandMap commandMap = getServer().getCommandMap();
+
+        command.unregister(commandMap);
+
+        commandMap.getKnownCommands()
+                .remove(command.getLabel());
 
         if (isRunning) {
             isRunning = false;
