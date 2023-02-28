@@ -331,7 +331,7 @@ public class SQLReputationStorage implements ReputationStorage {
     }
 
     @Override
-    public CompletableFuture<Boolean> hasVoted(
+    public CompletableFuture<Instant> hasVoted(
         @NotNull ReputationPlayer player,
         @NotNull ReputationPlayer target,
         long seconds
@@ -351,13 +351,19 @@ public class SQLReputationStorage implements ReputationStorage {
 
                 preparedStatement.setTimestamp(3, timestamp);
 
-                return preparedStatement.executeQuery()
-                    .next();
+                ResultSet resultSet = preparedStatement.executeQuery();
+                if (!resultSet.next()) {
+                    return null;
+                }
+
+                timestamp = resultSet.getTimestamp("created_at");
+
+                return timestamp.toInstant();
             } catch (Exception exception) {
                 ReputationLogger.error("Failed to retrieve vote log", exception);
             }
 
-            return false;
+            return null;
         }, connector.getWorker());
     }
 

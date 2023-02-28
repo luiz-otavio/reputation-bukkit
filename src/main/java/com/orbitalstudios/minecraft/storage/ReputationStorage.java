@@ -6,6 +6,7 @@ import com.orbitalstudios.minecraft.storage.connector.ReputationStorageConnector
 import com.orbitalstudios.minecraft.util.SQLReader;
 import org.jetbrains.annotations.NotNull;
 
+import java.time.Instant;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
@@ -39,7 +40,7 @@ public interface ReputationStorage {
         int amount
     );
 
-    CompletableFuture<Boolean> hasVoted(@NotNull ReputationPlayer player, @NotNull ReputationPlayer target, long seconds);
+    CompletableFuture<Instant> hasVoted(@NotNull ReputationPlayer player, @NotNull ReputationPlayer target, long seconds);
 
     CompletableFuture<Boolean> batchPlayers(@NotNull ReputationPlayer... players);
 

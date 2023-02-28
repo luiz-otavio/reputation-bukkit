@@ -5,6 +5,7 @@ import com.orbitalstudios.minecraft.pojo.vote.VoteType;
 import com.orbitalstudios.minecraft.vo.ReputationVO;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.Setter;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
@@ -20,10 +21,11 @@ import java.util.UUID;
  **/
 @AllArgsConstructor
 @Getter
+@Setter
 public class ReputationPlayer {
 
     private final UUID uniqueId;
-    private final String name;
+    private String name;
 
     private final Map<VoteType, Integer> votes;
     private final Map<VoteType, Instant> histories;

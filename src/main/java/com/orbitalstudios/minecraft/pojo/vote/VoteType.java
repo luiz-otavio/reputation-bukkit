@@ -6,5 +6,6 @@ package com.orbitalstudios.minecraft.pojo.vote;
  **/
 public enum VoteType {
     LIKE,
-    DISLIKE
+    DISLIKE,
+    NEUTRAL
 }

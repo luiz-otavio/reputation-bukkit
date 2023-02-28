@@ -11,13 +11,13 @@ import com.orbitalstudios.minecraft.repository.ReputationRepository;
 import com.orbitalstudios.minecraft.storage.ReputationStorage;
 import com.orbitalstudios.minecraft.storage.connector.ReputationStorageConnector;
 import com.orbitalstudios.minecraft.storage.connector.impl.HikariStorageConnector;
-import com.orbitalstudios.minecraft.storage.impl.DevelopmentReputationStorage;
 import com.orbitalstudios.minecraft.storage.impl.SQLReputationStorage;
 import com.orbitalstudios.minecraft.util.Colors;
 import com.orbitalstudios.minecraft.vo.ReputationVO;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.command.CommandMap;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.event.HandlerList;
@@ -55,6 +55,8 @@ public class ReputationPlugin extends JavaPlugin {
 
     private PlaceholderExpansion[] expansions;
 
+    private ReputationCommand command;
+
     @Override
     public void onLoad() {
         if (!getDataFolder().exists()) {
@@ -73,6 +75,12 @@ public class ReputationPlugin extends JavaPlugin {
             throw new NullPointerException("Settings is null");
         }
 
+        ConfigurationSection permissions = settings.getConfigurationSection("Permissions");
+
+        if (permissions == null) {
+            throw new NullPointerException("Permissions is null");
+        }
+
         if (messages == null) {
             throw new NullPointerException("Messages is null");
         }
@@ -82,9 +90,10 @@ public class ReputationPlugin extends JavaPlugin {
             .put(VoteType.DISLIKE, (float) settings.getDouble("Dislike-Reputation-Change"))
             .build();
 
-        ImmutableMap<VoteType, ChatColor> voteColors = ImmutableMap.<VoteType, ChatColor>builder()
+        ImmutableMap<VoteType, String> voteColors = ImmutableMap.<VoteType, String>builder()
             .put(VoteType.LIKE, Colors.getColor(settings.getString("Reputation-Color-Like")))
             .put(VoteType.DISLIKE, Colors.getColor(settings.getString("Reputation-Color-Dislike")))
+            .put(VoteType.NEUTRAL, Colors.getColor(settings.getString("Reputation-Color-Neutral")))
             .build();
 
         Map<String, String> messagesMap = new LinkedHashMap<>();
@@ -93,10 +102,18 @@ public class ReputationPlugin extends JavaPlugin {
             messagesMap.put(key, ChatColor.translateAlternateColorCodes('&', messages.getString(key)));
         }
 
+        ImmutableMap<String, String> permissionsMap = ImmutableMap.<String, String>builder()
+            .put("Admin", permissions.getString("Admin"))
+            .put("Like", permissions.getString("Like"))
+            .put("Dislike", permissions.getString("Dislike"))
+            .put("Others", permissions.getString("Others"))
+            .put("See", permissions.getString("See"))
+            .build();
+
         reputationVO = new ReputationVO(
             settings.getInt("Dislike-Cooldown", 60),
-            settings.getString("Admin-Permission", "reputation.admin"),
             voteTypes,
+            permissionsMap,
             voteColors,
             messagesMap
         );
@@ -134,20 +151,19 @@ public class ReputationPlugin extends JavaPlugin {
             });
 
         storage = new SQLReputationStorage(storageConnector);
-
 //        storage = new DevelopmentReputationStorage();
 
         reputationRepository = new ReputationRepository();
 
-        getServer().getCommandMap().register(
-            "reputation",
-            new ReputationCommand(
-                storage,
-                reputationRepository,
-                reputationVO,
-                this
-            )
+        command = new ReputationCommand(
+            storage,
+            reputationRepository,
+            reputationVO,
+            this
         );
+
+        getServer().getCommandMap()
+            .register("reputation", "reputation", command);
 
         ReputationLogger.info("Registering listeners...");
         PluginManager pluginManager = Bukkit.getPluginManager();
@@ -162,12 +178,12 @@ public class ReputationPlugin extends JavaPlugin {
             return;
         }
 
-        expansions = new PlaceholderExpansion[] {
-            new ColorExtension(reputationRepository, reputationVO),
-            new TotalExtension(reputationRepository, reputationVO),
-            new DislikeExtension(reputationRepository),
-            new LikeExtension(reputationRepository),
-            new PercentageExtension(reputationRepository)
+        expansions = new PlaceholderExpansion[]{
+            new ColorExtension(reputationRepository, storage, reputationVO),
+            new TotalExtension(reputationRepository, storage, reputationVO),
+            new DislikeExtension(reputationRepository, storage),
+            new LikeExtension(reputationRepository, storage),
+            new PercentageExtension(reputationRepository, storage)
         };
 
         for (PlaceholderExpansion expansion : expansions) {
@@ -183,14 +199,24 @@ public class ReputationPlugin extends JavaPlugin {
     public void onDisable() {
         HandlerList.unregisterAll(this);
 
+        CommandMap commandMap = getServer().getCommandMap();
+
+        command.unregister(commandMap);
+
+        commandMap.getKnownCommands()
+                .remove(command.getLabel());
+
         if (isRunning) {
             isRunning = false;
         } else {
             return;
         }
 
-        for (PlaceholderExpansion expansion : expansions) {
-            expansion.unregister();
+        PluginManager pluginManager = Bukkit.getPluginManager();
+        if (pluginManager.isPluginEnabled("PlaceholderAPI")) {
+            for (PlaceholderExpansion expansion : expansions) {
+                expansion.unregister();
+            }
         }
 
         ReputationPlayer[] reputationPlayers = reputationRepository.getReputationPlayers()

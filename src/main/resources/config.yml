@@ -1,16 +1,23 @@
 Settings:
     # Time in seconds between each check
     Dislike-Cooldown: 60
-    Admin-Permission: 'reputation.admin'
+
+    Permissions:
+        Admin: 'reputation.admin'
+        Like: 'reputation.like'
+        Dislike: 'reputation.dislike'
+        Others: 'reputation.see.others'
+        See: 'reputation.see'
 
     Dislike-Reputation-Change: 0.25
     Like-Reputation-Change: 0.25
 
     Reputation-Color-Dislike: '&c'
     Reputation-Color-Like: '&a'
+    Reputation-Color-Neutral: '&7'
 
 Messages:
-    Dislike-Cooldown: '&cYou must wait %cooldown% seconds before you can dislike again.'
+    Dislike-Cooldown: '&cYou must wait %cooldown% before you can dislike again.'
     Dislike-Message: '&cYou disliked %player%!'
     Like-Message: '&aYou liked %player%!'
     No-Permission: '&cYou do not have permission to do that.'
@@ -21,3 +28,5 @@ Messages:
     Player-Reputation: '&a%player% has a total of %reputation% reputation with %likes% likes and %dislikes% dislikes.'
     Invalid-Arguments: '&cInvalid arguments.'
     Cannot-Vote-Yourself: '&cYou cannot vote for yourself.'
+    Reputation-Updated: '&aYour reputation has been updated.'
+    Reload: '&aReloaded config.'
